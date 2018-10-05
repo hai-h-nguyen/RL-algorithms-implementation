@@ -1,0 +1,1 @@
+Notes based on https://medium.freecodecamp.org/an-introduction-to-q-learning-reinforcement-learning-14ac0b4493cc
