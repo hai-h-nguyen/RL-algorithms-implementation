@@ -1,14 +1,8 @@
-Notes based on https://medium.freecodecamp.org/an-introduction-to-q-learning-reinforcement-learning-14ac0b4493cc
+Introducing Q-table:
 
-Policy-based approach:
-In this case, we have a policy which will need to optimize. The policy will help us to map from states to actions.
-There are two kinds:
-- Deterministic: A policy at a given state (s) will always return the same action (a) S = s -> A = a
-- Stochastic: It gives a distribution of probability given over different action i.e. Stochastic policy p(A = a|S = s)
+It is a simple look-up table where we calculate the maximum expected future rewards for action at each state. This table will guide us
+to the best action at each state.
 
-Value-based: The goal of the agent is to optimize the value function V(s) which is defined as a function to tells us the maximum
-epxected future reward that the agent shall get at each state
-
-
-The agent will use this value function to select which state to choose at each step. The agent will always take the state with the biggest
-value. 
+I implement the Q-table and tested with 3 environments in Gym: Taxi-v2, Frozen-v0 and Frozen8x8-v0. One note is that the exploration/exploitation
+tradeoff should be dependent on the number of training episodes. I reduce episilon linearly with the number of training episodes. Initially, epsilon
+is max_epsilon (1.0) but it will become min_epsilon towards the end of the training.
