@@ -6,7 +6,7 @@ from model import DQN
 
 
 model = DQN()
-model.load_state_dict(torch.load("model.pt"))
+model.load_state_dict(torch.load("model-4.pt"))
 
 env = gym.make("TwoBumps-v0")
 

@@ -3,9 +3,10 @@ import torch
 import random
 
 def set_global_seeds(seed):
-    np.random.seed(seed)
-    random.seed(seed)
-    torch.manual_seed(seed)
+    # np.random.seed(seed)
+    # random.seed(seed)
+    # torch.manual_seed(seed)
+    pass
 
 
 def rolling_average(data, *, window_size):
@@ -73,7 +74,7 @@ def select_action_epsilon_greedy(dqn_model, state, eps, env):
         with torch.no_grad():
             state = torch.from_numpy(state)
             state = state.float()
-            q_value = dqn_model(state)
+            q_value = dqn_model.forward(state)
             action = q_value.max(0)[1].item()
 
     return action

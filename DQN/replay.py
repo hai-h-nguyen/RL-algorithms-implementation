@@ -34,11 +34,6 @@ class ReplayMemory:
         # indicates number of transitions currently stored in the buffer
         self.size = 0
 
-        self.mean = torch.tensor((state_size, 1), dtype=torch.float)
-        self.std = torch.tensor((state_size, 1), dtype=torch.float)
-
-        self.normalize_start = False
-
     def add(self, state, action, reward, next_state, done):
         """Add a transition to the buffer.
 
@@ -54,10 +49,6 @@ class ReplayMemory:
         self.rewards[self.idx] = torch.tensor(reward, dtype=torch.float)
         self.next_states[self.idx] = torch.tensor(next_state, dtype=torch.float)
         self.dones[self.idx] = torch.tensor(done, dtype=torch.float)
-
-        if self.normalize_start:
-            self.states[self.idx] = (self.states[self.idx] - self.mean)/self.std
-            self.next_states[self.idx] = (self.next_states[self.idx] - self.mean)/self.std     
 
         # circulate the pointer to the next position
         self.idx = (self.idx + 1) % self.max_size
@@ -87,16 +78,3 @@ class ReplayMemory:
                      self.next_states[sample_indices], self.dones[sample_indices])
 
         return batch
-
-    def normalize(self):
-        self.mean = torch.mean(self.states, dim=0)
-        self.std = torch.std(self.states, dim=0)
-
-        if not self.normalize_start:
-            self.states = (self.states - self.mean)/self.std
-            self.next_states = (self.next_states - self.mean)/self.std
-            self.normalize_start = True
-
-    def check_normalize(self):
-        print(torch.mean(self.states, dim=0), torch.std(self.states, dim=0))
-        print(torch.mean(self.next_states, dim=0), torch.std(self.next_states, dim=0))

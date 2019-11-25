@@ -18,11 +18,11 @@ import argparse
 parser = argparse.ArgumentParser()
 
 parser.add_argument("--model_path", nargs='?')
-parser.add_argument("--num_timesteps", default=1000000, nargs='?', type=int)
+parser.add_argument("--num_timesteps", default=100000, nargs='?', type=int)
 parser.add_argument("--env", default="TwoBumps-v0", nargs='?')
 parser.add_argument("--seed", default=0, nargs='?', type=int)
 parser.add_argument("--final_epsilon", default=0.02, nargs='?')
-parser.add_argument("--exploration_fraction", default=0.1, nargs='?')
+parser.add_argument("--exploration_fraction", default=0.6, nargs='?')
 parser.add_argument("--replay_size", default=50000, nargs='?', type=int)
 parser.add_argument("--batch_size", default=32, nargs='?')
 parser.add_argument("--target_network_update_freq", default=500, nargs='?', type=int)

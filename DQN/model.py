@@ -26,7 +26,9 @@ class DQN(nn.Module):
         self.hidden_dim = hidden_dim
 
         self.fc1 = nn.Linear(self.state_dim, self.hidden_dim)
-        self.fc2 = nn.Linear(self.hidden_dim, self.hidden_dim)
+        self.hidden = nn.ModuleList()
+        for _ in range(self.num_layers - 2):
+            self.hidden.append(nn.Linear(self.hidden_dim, self.hidden_dim))
         self.out = nn.Linear(self.hidden_dim, self.action_dim)
 
     def forward(self, states) -> torch.Tensor:
@@ -38,14 +40,13 @@ class DQN(nn.Module):
                 dimensions as the `states`, and A is the dimensionality of the
                 action-space.  This represents the Q values Q(s, .).
         """
-        x = torch.tanh(self.fc1(states))
-        x = torch.tanh(self.fc2(x))
+        x = F.relu(self.fc1(states))
+
+        for layer in self.hidden:
+            x = F.relu(layer(x))
         x = self.out(x)
 
         return x
-
-    def activate_batch_norm(self):
-        return self.use_batch_norm
 
     # utility methods for cloning and storing models.  DO NOT EDIT
     @classmethod
@@ -100,7 +101,6 @@ def train_dqn_batch(optimizer, batch, dqn_model, dqn_target, gamma) -> float:
 
     optimizer.zero_grad()  # reset all previous gradients
     loss.backward()  # compute new gradients
-    nn.utils.clip_grad_norm_(dqn_model.parameters(),5.0)
     optimizer.step()  # perform one gradient descent step
 
     return loss.item()
@@ -151,10 +151,10 @@ def train_dqn(
 
     # initialize the DQN and DQN-target models
     dqn_model = DQN(state_size, env.action_space.n)
-    dqn_target = DQN.custom_load(dqn_model.custom_dump())  
+    dqn_target = DQN.custom_load(dqn_model.custom_dump())
 
     # initialize the optimizer
-    optimizer = torch.optim.Adam(dqn_model.parameters(), lr=0.001)
+    optimizer = torch.optim.Adam(dqn_model.parameters(), lr=5e-4)
 
     # initialize the replay memory
     memory = ReplayMemory(replay_size, state_size)
@@ -188,12 +188,6 @@ def train_dqn(
         next_state, reward, done, _ = env.step(action)
         memory.add(state, action, reward, next_state, done)
 
-        # if t_total == t_learning_start:
-        #     memory.normalize()
-
-        # if t_total % t_learning_start == 0:
-        #     memory.check_normalize()
-
         rewards.append(reward)
         state = next_state
         
@@ -224,7 +218,7 @@ def train_dqn(
                 logger.record_tabular("time step", t_total)
 
                 logger.record_tabular("episodes", i_episode)
-                logger.record_tabular("current length", t_episode + 1)
+                logger.record_tabular("step", t_episode + 1)
                 logger.record_tabular("return", G)
                 logger.record_tabular("mean reward", np.mean(last_100_returns))
                 logger.record_tabular("mean length", np.mean(last_100_lengths))
