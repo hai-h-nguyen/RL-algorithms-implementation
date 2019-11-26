@@ -1,2 +1,4 @@
 *.pt
 *.pyc
+*.png
+*.pth
