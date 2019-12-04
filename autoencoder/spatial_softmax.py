@@ -13,8 +13,8 @@ class SpatialSoftmax(torch.nn.Module):
         self.width = width
         self.channel = channel
 
-        if temperature is None:
-            self.temperature = 1
+        if temperature:
+            self.temperature = Parameter(torch.ones(1)*temperature)
         else:            
             self.temperature = 1
 
