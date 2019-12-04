@@ -16,9 +16,9 @@ from spatial_softmax import SpatialSoftmax
 if not os.path.exists('dc_img'):
     os.mkdir('dc_img')
 
-num_epochs = 50
-batch_size = 16
-learning_rate = 1e-3
+num_epochs = 200
+batch_size = 64
+learning_rate = 1e-4
 
 class autoencoder(nn.Module):
     def __init__(self):
@@ -55,7 +55,7 @@ model = autoencoder().cuda()
 data_path = "images"
 train_dataset = torchvision.datasets.ImageFolder(
     root=data_path,
-    transform=torchvision.transforms.ToTensor()
+    transform=transforms.Compose([transforms.CenterCrop(240), transforms.ToTensor()])
 )
 
 train_loader = torch.utils.data.DataLoader(
@@ -65,15 +65,39 @@ train_loader = torch.utils.data.DataLoader(
     shuffle=True
 )
 
+# Test transform - cropping (OK)
+# for data in train_loader:
+#     img, _ = data
+#     pil_image = transforms.ToPILImage()(img[0].view(3, 240, 240))
+#     pil_image.show()
+#     break
+
+
+
 device = torch.device("cuda:0" if torch.cuda.is_available() else "cpu")
 
 transformations = transforms.Compose([transforms.ToPILImage(), transforms.Resize((60,60)),
                                           transforms.Grayscale(num_output_channels=1),
                                           transforms.ToTensor()])
 
+# Test transform - grey (OK)
+# for data in train_loader:
+#     img, _ = data
+
+#     raw_img = transforms.ToPILImage()(img[0])
+#     raw_img.show()
+
+#     grey_tensor = transformations(img[0].cpu().view(3, 240, 240))
+#     pil_image = transforms.ToPILImage()(grey_tensor)
+#     pil_image.show()
+#     break
+
 criterion = nn.MSELoss()
 optimizer = torch.optim.SGD(model.parameters(), lr=learning_rate,
                              momentum=0.9)
+
+model.train()
+
 
 for epoch in range(num_epochs):
     for data in train_loader:
@@ -90,7 +114,9 @@ for epoch in range(num_epochs):
             grey_out_image[cnt] = grey_tensor
             cnt += 1
 
+        print(output.shape, grey_out_image.shape)
         loss = criterion(output.view(-1, 1, 60, 60), grey_out_image.to(device))
+
         # ===================backward====================
         optimizer.zero_grad()
         loss.backward()
@@ -98,11 +124,8 @@ for epoch in range(num_epochs):
     # ===================log========================
     print('epoch [{}/{}], loss:{:.4f}'
           .format(epoch+1, num_epochs, loss.item()))
-    if epoch % 1 == 0:
+    if epoch % 5 == 0:
         pic = output[0].cpu().data.view(1, 60, 60)
         save_image(pic, './dc_img/image_{}.png'.format(epoch))
 
 torch.save(model.state_dict(), './conv_autoencoder.pth')
-
-
-print("End")
